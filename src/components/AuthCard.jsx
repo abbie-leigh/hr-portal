@@ -5,6 +5,7 @@ export default function AuthCard({
     form,
     onChange,
     onSubmit,
+    error = "",
     title = "Welcome Back",
     subtitle = "Sign in to Employee Hub using your network username and password",
     submitLabel = "Sign in",
@@ -18,12 +19,17 @@ export default function AuthCard({
             <h1 className="flex items-center justify-center gap-2 text-3xl font-semibold text-slate-700">
                 <span>{title}</span>
                 <UserCircleIcon className="h-9 w-9 text-indigo-500" aria-hidden="true" />
-
             </h1>
             <p className="mt-3 text-sm text-slate-600 text-center">
                 {subtitle}
             </p>
         </header>
+
+        {error ? (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
+            </div>
+        ) : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
 

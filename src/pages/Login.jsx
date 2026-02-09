@@ -1,17 +1,23 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Container from "../components/Container";
 import AuthCard from "../components/AuthCard";
+import { setCurrentUser } from "../store/authSlice";
+import { findUserByUsername } from "../services/api";
 
 export default function Login() {
     const [form, setForm] = useState({ username: "", password: "" });
     const [error, setError] = useState(""); // reserve space for later validation/API errors
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     function handleChange(e) {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
     }
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
 
         // Basic front-end validation (keep simple for now)
@@ -20,9 +26,29 @@ export default function Login() {
             return;
         }
 
-        setError("");
-        // Later: call API / dispatch Redux action / set auth context
-        console.log("Login submitted:", form);
+        try {
+            const user = await findUserByUsername(form.username.trim());
+            if (!user) {
+                setError("No user found with that username.");
+                return;
+            }
+            if (!user.isRegistered) {
+                setError("You are not registered yet. Please sign up first.");
+                return;
+            }
+            if (user.networkPassword !== form.password) {
+                setError("Incorrect password. Please try again.");
+                return;
+            }
+
+            setError("");
+            dispatch(setCurrentUser(user));
+            navigate("/employee-dashboard");
+        } catch (err) {
+            const message =
+                err instanceof Error ? err.message : "Login failed. Please try again.";
+            setError(message);
+        }
     }
 
     return (
@@ -42,12 +68,13 @@ export default function Login() {
                             form={form}
                             onChange={handleChange}
                             onSubmit={handleSubmit}
+                            error={error}
                             title="Welcome Back"
                             subtitle="Sign in to Employee Hub using your network username and password"
                             submitLabel="Sign in"
-                            footerText="Don't have an account?"
-                            footerLinkText="Sign up"
-                            footerLinkTo="/signup"/>
+                            footerText="Haven't signed in yet?"
+                            footerLinkText="Register"
+                            footerLinkTo="/register"/>
                     </div>
                 </div>
             </Container>

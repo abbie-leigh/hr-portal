@@ -1,27 +1,56 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Container from "../components/Container";
 import AuthCard from "../components/AuthCard";
+import { isUserRegistered, registerUser, userExists } from "../services/api";
+import { setCurrentUser } from "../store/authSlice";
 
 export default function Signup() {
     const [form, setForm] = useState({ username: "", password: "" });
     const [error, setError] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     function handleChange(e) {
         const { name, value } = e.target;
         setForm((prev) => ({ ...prev, [name]: value }));
     }
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
 
-        if (!form.username.trim() || !form.password.trim()) {
+        const trimmedUsername = form.username.trim();
+        const trimmedPassword = form.password.trim();
+
+        if (!trimmedUsername || !trimmedPassword) {
             setError("Please enter both a username and password.");
             return;
         }
 
-        setError("");
-        console.log("Signup submitted:", form);
+        const exists = await userExists(trimmedUsername);
+        if (!exists) {
+            setError("A user does not exist with that username. Please contact your manager or HR representative.");
+            return;
+        }
+
+        const alreadyRegistered = await isUserRegistered(trimmedUsername);
+        if (alreadyRegistered) {
+            setError("You have already registered! Please sign in instead");
+            return;
+        }
+
+        try {
+            const user = await registerUser(trimmedUsername, trimmedPassword);
+            setError("");
+            dispatch(setCurrentUser(user));
+            navigate("/employee-dashboard");
+        } catch (err) {
+            const message = err instanceof Error
+                ? err.message
+                : "Registration failed. Please try again.";
+            setError(message);
+        }
     }
 
     return (
@@ -37,12 +66,13 @@ export default function Signup() {
                             form={form}
                             onChange={handleChange}
                             onSubmit={handleSubmit}
+                            error={error}
                             title="Welcome"
-                            subtitle="Register for Employee Hub using your network username and password"
-                            submitLabel="Sign up"
-                            footerText="Already have an account?"
+                            subtitle="Register for Employee Hub using your network username and a unique password"
+                            submitLabel="Register"
+                            footerText="Already registered?"
                             footerLinkText="Sign in"
-                            footerLinkTo="/login"/>
+                            footerLinkTo="/login" />
                     </div>
                 </div>
             </Container>
