@@ -154,10 +154,10 @@
       "managerId": "MGR-01",
       "salary": 100000,
       "yearlyLeaveBalance": 160,
-      "isRegistered": false,
+      "isRegistered": true,
       "role": "employee",
       "networkUsername": "pam.beesly",
-      "networkPassword": "",
+      "networkPassword": "password",
       "photo": "EMP-07.png",
       "active": "true"
     },
@@ -460,6 +460,22 @@
       "endDate": "2026-02-12T00:00:00-06:00",
       "totalHours": 8,
       "status": "approved"
+    },
+    {
+      "id": "ef23",
+      "employeeId": "EMP-07",
+      "startDate": "2026-02-12T00:00:00-06:00",
+      "endDate": "2026-02-12T00:00:00-06:00",
+      "totalHours": 8,
+      "status": "pending"
+    },
+    {
+      "id": "a953",
+      "employeeId": "EMP-07",
+      "startDate": "2026-02-16T00:00:00-06:00",
+      "endDate": "2026-02-17T00:00:00-06:00",
+      "totalHours": 16,
+      "status": "pending"
     }
   ]
 }

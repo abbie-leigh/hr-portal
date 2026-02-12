@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearCurrentUser } from "../store/authSlice";
+import UserAvatar from "../components/UserAvatar";
 
 const menuOptionClass = ({ isActive }) =>
     `rounded-md border border-slate-200 px-3 py-1.5 transition ${isActive
@@ -42,8 +43,6 @@ function Navbar() {
         };
     }, [isMenuOpen]);
 
-    const photoSrc = currentUser?.photo ? `/photos/${currentUser.photo}` : "";
-
     return (
         <nav className="w-full bg-white shadow-sm sticky top-0 z-50">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -70,20 +69,16 @@ function Navbar() {
                         <button
                             type="button"
                             onClick={handleToggleMenu}
-                            className="flex items-center cursor-pointer gap-2 rounded-full border border-slate-400"
+                            className="flex items-center cursor-pointer gap-2 rounded-full"
                             aria-haspopup="menu"
                             aria-expanded={isMenuOpen}
                         >
-                            {photoSrc ? (
-                                <img
-                                    src={photoSrc}
-                                    alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                                    className="h-10 w-10 rounded-full shadow-lg"
-                                    onError={(event) => {
-                                        event.currentTarget.style.display = "none";
-                                    }}
-                                />
-                            ) : null}
+                            <UserAvatar
+                                photo={currentUser?.photo}
+                                alt={`${currentUser.firstName} ${currentUser.lastName}`}
+                                sizeClassName="h-10 w-10"
+                                className="border-0"
+                            />
                         </button>
 
                         {isMenuOpen ? (
