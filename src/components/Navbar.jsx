@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearCurrentUser } from "../store/authSlice";
-import { cn } from "../utils/classNames";
-import { navMenuItemActive, navMenuItemBase, navMenuItemInactive } from "../styles/classes";
 
 const menuOptionClass = ({ isActive }) =>
     `rounded-md border border-slate-200 px-3 py-1.5 transition ${isActive
@@ -72,7 +70,7 @@ function Navbar() {
                         <button
                             type="button"
                             onClick={handleToggleMenu}
-                            className="flex items-center cursor-pointer gap-2 rounded-full border border-slate-200"
+                            className="flex items-center cursor-pointer gap-2 rounded-full border border-slate-400"
                             aria-haspopup="menu"
                             aria-expanded={isMenuOpen}
                         >
@@ -80,7 +78,7 @@ function Navbar() {
                                 <img
                                     src={photoSrc}
                                     alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                                    className="h-10 w-10 rounded-full"
+                                    className="h-10 w-10 rounded-full shadow-lg"
                                     onError={(event) => {
                                         event.currentTarget.style.display = "none";
                                     }}
@@ -105,11 +103,14 @@ function Navbar() {
                         ) : null}
                     </div>
                 ) : (
-                    <div className="space-x-4">
+                    <div className="flex items-center gap-3 text-sm font-medium">
                         <Link to="/login" className="text-slate-600 hover:text-slate-900">
                             Sign in
                         </Link>
-                        <Link to="/register" className="text-slate-600 hover:text-slate-900">
+                        <Link
+                            to="/register"
+                            className="rounded-full bg-indigo-500 px-4 py-1.5 text-white hover:bg-indigo-600"
+                        >
                             Register
                         </Link>
                     </div>

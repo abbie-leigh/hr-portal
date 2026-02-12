@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Container from "../components/Container";
 import AuthCard from "../components/AuthCard";
+import AuthBackground from "../components/Background";
 import { isUserRegistered, registerUser, userExists } from "../services/api";
 import { setCurrentUser } from "../store/authSlice";
 
@@ -55,7 +56,7 @@ export default function Signup() {
 
     return (
         /* Page background + overall height */
-        <div className="min-h-[calc(100vh-4rem)] bg-indigo-50">
+        <AuthBackground>
             {/* Centered content container (consistent site width) */}
             <Container>
                 {/* Login area width */}
@@ -76,6 +77,6 @@ export default function Signup() {
                     </div>
                 </div>
             </Container>
-        </div>
+        </AuthBackground>
     );
 }

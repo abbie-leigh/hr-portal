@@ -3,6 +3,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import Container from "../components/Container";
 import AuthCard from "../components/AuthCard";
+import AuthBackground from "../components/Background";
 import { setCurrentUser } from "../store/authSlice";
 import { findUserByUsername } from "../services/api";
 
@@ -53,11 +54,9 @@ export default function Login() {
 
     return (
         /* Page background + overall height */
-        <div className="min-h-[calc(100vh-4rem)] bg-indigo-50">
-
+        <AuthBackground>
             {/* Centered content container (consistent site width) */}
             <Container>
-
                 {/* Login area width */}
                 <div className="mx-auto w-full max-w-md">
 
@@ -70,14 +69,14 @@ export default function Login() {
                             onSubmit={handleSubmit}
                             error={error}
                             title="Welcome Back"
-                            subtitle="Sign in to Employee Hub using your network username and password"
+                            subtitle="Sign in using your network username and Employee Hub password"
                             submitLabel="Sign in"
                             footerText="Haven't signed in yet?"
                             footerLinkText="Register"
-                            footerLinkTo="/register"/>
+                            footerLinkTo="/register" />
                     </div>
                 </div>
             </Container>
-        </div>
+        </AuthBackground>
     );
 }

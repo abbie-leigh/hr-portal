@@ -11,6 +11,7 @@ import {
     getLeaveRequestsForUser,
 } from "../services/api";
 import { calculateBusinessHours, parseLocalDate } from "../utils/dateUtils";
+import AuthBackground from "../components/Background";
 
 function formatCurrency(value) {
     return new Intl.NumberFormat("en-US", {
@@ -157,9 +158,10 @@ export default function EmployeeDashboard() {
     }
 
     return (
-        <div className="min-h-[calc(100vh-4rem)] bg-slate-50">
-            <Container>
-                <div className="mx-auto w-full max-w-5xl">
+        <>
+            <AuthBackground>
+                <Container>
+                    <div className="mx-auto w-full max-w-5xl">
 
                     {/* Welcome Header */}
                     <header className="mb-8">
@@ -268,8 +270,9 @@ export default function EmployeeDashboard() {
                             </div>
                         </section>
                     </div>
-                </div>
-            </Container>
+                    </div>
+                </Container>
+            </AuthBackground>
 
             {!isCancelModalOpen ? null : (
                 <CancelModal
@@ -291,7 +294,7 @@ export default function EmployeeDashboard() {
                     calculateBusinessHours={calculateBusinessHours}
                 />
             )}
-        </div>
+        </>
     );
 }
 

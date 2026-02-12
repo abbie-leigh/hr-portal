@@ -66,7 +66,7 @@ export default function AuthCard({
             {/* Sign In Button */}
             <button
                 type="submit"
-                className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600">
+                className="mt-2 inline-flex cursor-pointer w-full items-center justify-center rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-600">
                 {submitLabel}
             </button>
 
