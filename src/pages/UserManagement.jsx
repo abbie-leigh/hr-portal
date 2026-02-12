@@ -36,8 +36,14 @@ export default function UserManagement() {
         <div className="min-h-[calc(100vh-4rem)] bg-slate-50">
             <Container>
                 <div className="mx-auto w-full max-w-6xl">
-                    <header className="mb-8">
+                    <header className="mb-6 flex flex-wrap items-center justify-between gap-3 px-2">
                         <h1 className="px-2 text-3xl font-semibold text-slate-700">Users</h1>
+                        <Link
+                            to="/user-management/new"
+                            className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                        >
+                            Add User
+                        </Link>
                     </header>
 
                     {error ? (

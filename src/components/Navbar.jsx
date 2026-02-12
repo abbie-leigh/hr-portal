@@ -2,6 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearCurrentUser } from "../store/authSlice";
+import { cn } from "../utils/classNames";
+import { navMenuItemActive, navMenuItemBase, navMenuItemInactive } from "../styles/classes";
+
+const menuOptionClass = ({ isActive }) =>
+    `rounded-md border border-slate-200 px-3 py-1.5 transition ${isActive
+        ? "bg-slate-50 text-slate-700 border-slate-200"
+        : "hover:bg-slate-50 hover:text-slate-800 border-white hover:border-slate-200"
+    }`
 
 function Navbar() {
     const currentUser = useSelector((state) => state.auth.currentUser);
@@ -36,9 +44,6 @@ function Navbar() {
         };
     }, [isMenuOpen]);
 
-    const initials = currentUser
-        ? `${currentUser.firstName?.[0] ?? ""}${currentUser.lastName?.[0] ?? ""}`.toUpperCase()
-        : "";
     const photoSrc = currentUser?.photo ? `/photos/${currentUser.photo}` : "";
 
     return (
@@ -50,40 +55,13 @@ function Navbar() {
 
                 {currentUser?.role === "hr-representative" ? (
                     <div className="hidden items-center gap-4 text-sm font-medium text-slate-600 md:flex">
-                        <NavLink
-                            to="/employee-dashboard"
-                            className={({ isActive }) =>
-                                `rounded-md px-3 py-1.5 transition ${
-                                    isActive
-                                        ? "bg-slate-100 text-slate-900"
-                                        : "hover:bg-slate-50 hover:text-slate-900"
-                                }`
-                            }
-                        >
+                        <NavLink to="/employee-dashboard" className={menuOptionClass}>
                             Profile
                         </NavLink>
-                        <NavLink
-                            to="/user-management"
-                            className={({ isActive }) =>
-                                `rounded-md px-3 py-1.5 transition ${
-                                    isActive
-                                        ? "bg-slate-100 text-slate-900"
-                                        : "hover:bg-slate-50 hover:text-slate-900"
-                                }`
-                            }
-                        >
+                        <NavLink to="/user-management" className={menuOptionClass}>
                             User Management
                         </NavLink>
-                        <NavLink
-                            to="/time-off-requests"
-                            className={({ isActive }) =>
-                                `rounded-md px-3 py-1.5 transition ${
-                                    isActive
-                                        ? "bg-slate-100 text-slate-900"
-                                        : "hover:bg-slate-50 hover:text-slate-900"
-                                }`
-                            }
-                        >
+                        <NavLink to="/time-off-requests" className={menuOptionClass}>
                             Time Off Requests
                         </NavLink>
                     </div>
@@ -94,7 +72,7 @@ function Navbar() {
                         <button
                             type="button"
                             onClick={handleToggleMenu}
-                            className="flex items-center cursor-pointer gap-2 rounded-full border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50"
+                            className="flex items-center cursor-pointer gap-2 rounded-full border border-slate-200"
                             aria-haspopup="menu"
                             aria-expanded={isMenuOpen}
                         >
@@ -102,7 +80,7 @@ function Navbar() {
                                 <img
                                     src={photoSrc}
                                     alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                                    className="h-10 w-10 rounded-full border border-slate-200 object-cover"
+                                    className="h-10 w-10 rounded-full"
                                     onError={(event) => {
                                         event.currentTarget.style.display = "none";
                                     }}

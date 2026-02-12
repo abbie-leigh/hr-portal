@@ -60,7 +60,10 @@ export default function EmployeeDashboard() {
         (a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
     );
     const usedHours = requests
-        .filter((request) => request.status === "approved" || request.status === "Approved")
+        .filter((request) => {
+            const status = String(request.status || "").toLowerCase();
+            return status === "approved" || status === "pending";
+        })
         .reduce((total, request) => total + request.totalHours, 0);
     const remainingBalance = employee ? employee.yearlyLeaveBalance - usedHours : 0;
 
@@ -162,7 +165,7 @@ export default function EmployeeDashboard() {
                     <header className="mb-8">
                         <h1 className="flex items-center text-3xl font-semibold text-slate-700">
                             <span className="px-2">Hello, {employee.firstName}!</span>
-                            <SparklesIcon className="h-9 w-9 text-indigo-500" aria-hidden="true" />
+                            <SparklesIcon className="h-9 w-9 text-indigo-300" aria-hidden="true" />
                         </h1>
                     </header>
 

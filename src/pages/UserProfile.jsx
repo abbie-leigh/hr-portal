@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { CheckIcon, PencilSquareIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import Container from "../components/Container";
-import { findUserById, updateUser } from "../services/api";
+import { findUserById, getDepartments, getRoles, updateUser } from "../services/api";
 import UserAvatar from "../components/UserAvatar";
+import UserAttributesTable from "../components/UserAttributesTable";
+import { userFields } from "../constants/userFields";
+import { getValueByPath } from "../utils/objectPath";
 
 export default function UserProfile() {
     const { userId } = useParams();
@@ -13,32 +16,15 @@ export default function UserProfile() {
     const [editValue, setEditValue] = useState("");
     const [saveError, setSaveError] = useState("");
     const [isSaving, setIsSaving] = useState(false);
+    const [roles, setRoles] = useState([]);
+    const [departments, setDepartments] = useState([]);
 
-    const fields = useMemo(
-        () => [
-            { label: "ID", path: "id" },
-            { label: "First Name", path: "firstName" },
-            { label: "Last Name", path: "lastName" },
-            { label: "Address Line 1", path: "address.addressLine1" },
-            { label: "City", path: "address.city" },
-            { label: "State", path: "address.state" },
-            { label: "Zip Code", path: "address.zipCode" },
-            { label: "Start Date", path: "startDate" },
-            { label: "End Date", path: "endDate" },
-            { label: "Active", path: "active" },
-            { label: "Title", path: "title" },
-            { label: "Department", path: "department" },
-            { label: "Manager ID", path: "managerId" },
-            { label: "Salary", path: "salary" },
-            { label: "Leave Balance", path: "yearlyLeaveBalance" },
-            { label: "Role", path: "role" },
-            { label: "Registered", path: "isRegistered" },
-            { label: "Username", path: "networkUsername" },
-            { label: "Password", path: "networkPassword" },
-            { label: "Photo", path: "photo" },
-        ],
-        []
-    );
+    const readOnlyFields = new Set(["id", "networkUsername", "isRegistered", "active", "networkPassword"]);
+    const dateFields = new Set(["startDate", "endDate"]);
+    const numericFields = new Set(["salary", "yearlyLeaveBalance"]);
+    const requiredFields = new Set(userFields.map((field) => field.path));
+    requiredFields.delete("networkPassword");
+    requiredFields.delete("photo");
 
     useEffect(() => {
         let isMounted = true;
@@ -58,15 +44,35 @@ export default function UserProfile() {
             }
         }
 
+        async function loadRoles() {
+            try {
+                const data = await getRoles();
+                if (isMounted) {
+                    setRoles(data);
+                }
+            } catch {
+                // ignore role load errors, fall back to text input
+            }
+        }
+
         loadUser();
+        loadRoles();
+        async function loadDepartments() {
+            try {
+                const data = await getDepartments();
+                if (isMounted) {
+                    setDepartments(data);
+                }
+            } catch {
+                // ignore department load errors
+            }
+        }
+
+        loadDepartments();
         return () => {
             isMounted = false;
         };
     }, [userId]);
-
-    function getValueByPath(source, path) {
-        return path.split(".").reduce((acc, key) => (acc ? acc[key] : undefined), source);
-    }
 
     function startEditing(path) {
         if (!user) return;
@@ -88,17 +94,32 @@ export default function UserProfile() {
         setSaveError("");
 
         try {
+            if (requiredFields.has(path) && (editValue === "" || editValue === null || editValue === undefined)) {
+                setSaveError("Please fill out all required fields.");
+                setIsSaving(false);
+                return;
+            }
+
+            let nextValue = editValue;
+            if (path === "isRegistered" || path === "active") {
+                nextValue = editValue === "true" || editValue === true;
+            }
+            if (numericFields.has(path)) {
+                const parsed = Number(editValue);
+                nextValue = Number.isNaN(parsed) ? 0 : parsed;
+            }
+
             let patch = {};
             if (path.startsWith("address.")) {
                 const key = path.split(".")[1];
                 patch = {
                     address: {
                         ...user.address,
-                        [key]: editValue,
+                        [key]: nextValue,
                     },
                 };
             } else {
-                patch = { [path]: editValue };
+                patch = { [path]: nextValue };
             }
 
             const updated = await updateUser(user.id, patch);
@@ -112,6 +133,29 @@ export default function UserProfile() {
             setIsSaving(false);
         }
     }
+
+    const roleOptions = roles
+        .map((role) => {
+            if (typeof role === "string") return { value: role, label: role };
+            if (role && typeof role === "object") {
+                const value = role.id ?? role.role ?? role.name;
+                if (!value) return null;
+                return { value, label: role.name ?? value };
+            }
+            return null;
+        })
+        .filter(Boolean);
+    const departmentOptions = departments
+        .map((department) => {
+            if (typeof department === "string") return { value: department, label: department };
+            if (department && typeof department === "object") {
+                const value = department.id ?? department.name;
+                if (!value) return null;
+                return { value, label: department.name ?? value };
+            }
+            return null;
+        })
+        .filter(Boolean);
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-slate-50">
@@ -149,86 +193,115 @@ export default function UserProfile() {
                                 </div>
                             ) : null}
 
-                            <div className="mt-6 grid gap-6 lg:grid-cols-2">
-                                {[fields.slice(0, Math.ceil(fields.length / 2)), fields.slice(Math.ceil(fields.length / 2))].map(
-                                    (columnFields, columnIndex) => (
-                                        <div
-                                            key={`column-${columnIndex}`}
-                                            className="overflow-hidden rounded-xl border border-slate-100"
-                                        >
-                                            <table className="w-full text-left text-sm text-slate-600">
-                                                <tbody>
-                                                    {columnFields.map((field) => {
-                                                        const value = getValueByPath(user, field.path);
-                                                        const isEditing = editingField === field.path;
+                            <UserAttributesTable
+                                fields={userFields}
+                                renderValue={(field) => {
+                                    const value = getValueByPath(user, field.path);
+                                    const isEditing = editingField === field.path;
 
-                                                        return (
-                                                            <tr
-                                                                key={field.path}
-                                                                className="border-t border-slate-100"
-                                                            >
-                                                                <th className="w-36 bg-slate-50 px-4 py-3 text-xs uppercase tracking-wide text-slate-400">
-                                                                    {field.label}
-                                                                </th>
-                                                                <td className="px-4 py-3 text-slate-700">
-                                                                    {isEditing ? (
-                                                                        <input
-                                                                            type="text"
-                                                                            value={editValue}
-                                                                            onChange={(event) =>
-                                                                                setEditValue(event.target.value)
-                                                                            }
-                                                                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                                                                        />
-                                                                    ) : (
-                                                                        <span>
-                                                                            {value === undefined || value === null
-                                                                                ? "—"
-                                                                                : String(value)}
-                                                                        </span>
-                                                                    )}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-right">
-                                                                    {isEditing ? (
-                                                                        <div className="flex justify-end gap-2">
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={cancelEditing}
-                                                                                className="inline-flex cursor-pointer h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-                                                                                disabled={isSaving}
-                                                                                aria-label="Cancel"
-                                                                            >
-                                                                                <XMarkIcon className="h-4 w-4" aria-hidden="true" />
-                                                                            </button>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => saveField(field.path)}
-                                                                                className="inline-flex cursor-pointer h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white hover:bg-indigo-600"
-                                                                                disabled={isSaving}
-                                                                                aria-label="Save"
-                                                                            >
-                                                                                <CheckIcon className="h-4 w-4" aria-hidden="true" />
-                                                                            </button>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => startEditing(field.path)}
-                                                                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-400 hover:bg-slate-50"
-                                                                        >
-                                                                            <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
-                                                                        </button>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    })}
-                                                </tbody>
-                                            </table>
+                                    if (readOnlyFields.has(field.path)) {
+                                        return (
+                                            <span className="text-sm text-slate-500">
+                                                {value === undefined || value === null || value === ""
+                                                    ? "—"
+                                                    : String(value)}
+                                            </span>
+                                        );
+                                    }
+
+                                    if (isEditing && field.path === "role" && roleOptions.length > 0) {
+                                        return (
+                                            <select
+                                                value={value ?? ""}
+                                                onChange={(event) => setEditValue(event.target.value)}
+                                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                            >
+                                                {roleOptions.map((role) => (
+                                                    <option key={role.value} value={role.value}>
+                                                        {role.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        );
+                                    }
+
+                                    if (isEditing && field.path === "department" && departmentOptions.length > 0) {
+                                        return (
+                                            <select
+                                                value={value ?? ""}
+                                                onChange={(event) => setEditValue(event.target.value)}
+                                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                            >
+                                                {departmentOptions.map((department) => (
+                                                    <option key={department.value} value={department.value}>
+                                                        {department.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        );
+                                    }
+
+                                    if (isEditing && dateFields.has(field.path)) {
+                                        return (
+                                            <input
+                                                type="date"
+                                                value={editValue}
+                                                onChange={(event) => setEditValue(event.target.value)}
+                                                className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                            />
+                                        );
+                                    }
+
+                                    return isEditing ? (
+                                        <input
+                                            type="text"
+                                            value={editValue}
+                                            onChange={(event) => setEditValue(event.target.value)}
+                                            className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                                        />
+                                    ) : (
+                                        <span>
+                                            {value === undefined || value === null ? "—" : String(value)}
+                                        </span>
+                                    );
+                                }}
+                                renderActions={(field) => {
+                                    const isEditing = editingField === field.path;
+                                    if (readOnlyFields.has(field.path)) {
+                                        return null;
+                                    }
+                                    return isEditing ? (
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={cancelEditing}
+                                                className="inline-flex cursor-pointer h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                                                disabled={isSaving}
+                                                aria-label="Cancel"
+                                            >
+                                                <XMarkIcon className="h-4 w-4" aria-hidden="true" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => saveField(field.path)}
+                                                className="inline-flex cursor-pointer h-8 w-8 items-center justify-center rounded-lg bg-indigo-500 text-white hover:bg-indigo-600"
+                                                disabled={isSaving}
+                                                aria-label="Save"
+                                            >
+                                                <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                                            </button>
                                         </div>
-                                    )
-                                )}
-                            </div>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => startEditing(field.path)}
+                                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-400 hover:bg-slate-50"
+                                        >
+                                            <PencilSquareIcon className="h-4 w-4" aria-hidden="true" />
+                                        </button>
+                                    );
+                                }}
+                            />
                         </div>
                     ) : (
                         !error && (

@@ -109,3 +109,34 @@ export async function updateUser(userId, patch) {
   if (!res.ok) throw new Error("Failed to update user");
   return res.json();
 }
+
+export async function getRoles() {
+  const res = await fetch(`${API_BASE}/roles`);
+  if (!res.ok) throw new Error("Failed to load roles");
+  return res.json();
+}
+
+export async function getDepartments() {
+  const res = await fetch(`${API_BASE}/departments`);
+  if (!res.ok) throw new Error("Failed to load departments");
+  return res.json();
+}
+
+export async function getAllLeaveRequests() {
+  const res = await fetch(`${API_BASE}/leaveRequests`);
+  if (!res.ok) throw new Error("Failed to load leave requests");
+  return res.json();
+}
+
+export async function updateLeaveRequest(requestId, patch) {
+  if (!requestId) throw new Error("Leave request id is required");
+
+  const res = await fetch(`${API_BASE}/leaveRequests/${encodeURIComponent(requestId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+
+  if (!res.ok) throw new Error("Failed to update leave request");
+  return res.json();
+}

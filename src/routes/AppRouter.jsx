@@ -5,6 +5,8 @@ import Signup from "../pages/Signup";
 import EmployeeDashboard from "../pages/EmployeeDashboard";
 import UserManagement from "../pages/UserManagement";
 import UserProfile from "../pages/UserProfile";
+import AddUser from "../pages/AddUser";
+import TimeOffRequests from "../pages/TimeOffRequests";
 
 function RequireAuth({ children }) {
     const currentUser = useSelector((state) => state.auth.currentUser);
@@ -35,7 +37,7 @@ function AppRouter() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Signup />} />
 
-            {/* Protected routes (later) */}
+            {/* Protected routes */}
             <Route
                 path="/employee-dashboard"
                 element={
@@ -57,6 +59,22 @@ function AppRouter() {
                 element={
                     <RequireHr>
                         <UserProfile />
+                    </RequireHr>
+                }
+            />
+            <Route
+                path="/user-management/new"
+                element={
+                    <RequireHr>
+                        <AddUser />
+                    </RequireHr>
+                }
+            />
+            <Route
+                path="/time-off-requests"
+                element={
+                    <RequireHr>
+                        <TimeOffRequests />
                     </RequireHr>
                 }
             />

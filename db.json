@@ -426,6 +426,16 @@
       "id": "hr-representative"
     }
   ],
+  "departments": [
+    "Sales",
+    "Office Administration",
+    "Accounting",
+    "Customer Service",
+    "Quality Assurance",
+    "Supplier Relations",
+    "Warehouse",
+    "HR"
+  ],
   "leaveRequests": [
     {
       "id": "LR-1",
@@ -441,15 +451,15 @@
       "startDate": "2026-02-12T00:00:00-06:00",
       "endDate": "2026-02-13T00:00:00-06:00",
       "totalHours": 16,
-      "status": "pending"
+      "status": "denied"
     },
     {
-      "id": "510a",
+      "id": "3d3d",
       "employeeId": "HRR-01",
-      "startDate": "2026-02-09T00:00:00-06:00",
-      "endDate": "2026-02-10T00:00:00-06:00",
-      "totalHours": 16,
-      "status": "pending"
+      "startDate": "2026-02-12T00:00:00-06:00",
+      "endDate": "2026-02-12T00:00:00-06:00",
+      "totalHours": 8,
+      "status": "approved"
     }
   ]
 }
